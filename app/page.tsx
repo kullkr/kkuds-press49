@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const marqueeText = "📣 ยินดีต้อนรับสู่ศูนย์ประสานงาน Press Center KKUDS | ขอส่งกำลังใจให้นักกีฬาทุกคนใน DAY 1 นี้! โชคดีมีชัยทุกชนิดกีฬาจ้า";
+  const marqueeText = "📣 ยินดีต้อนรับสู่ศูนย์ประสานงาน Press Center KKUDS | โปรดตรวจสอบตารางการใช้ยานพาหนะและรายงานผลการแข่งขันประจำวันได้ที่นี่";
 
   // แท็บประจำวันสำหรับตารางการใช้รถ
   const vehicleScheduleDays = [
@@ -41,7 +41,8 @@ export default function Home() {
 
   const [currentVehicleDayIdx, setCurrentVehicleDayIdx] = useState(0);
   const [currentMatchTabIdx, setCurrentMatchTabIdx] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreenVehicle, setIsFullscreenVehicle] = useState(false);
+  const [isFullscreenMatch, setIsFullscreenMatch] = useState(false);
   
   // State ตารางใช้รถ
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
@@ -102,7 +103,7 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to fetch vehicle data", err);
       setParsedVehicleRows([]);
-    } finally {
+    } flex {
       setIsLoadingVehicles(false);
     }
   };
@@ -221,6 +222,119 @@ export default function Home() {
     return colorPairs[index];
   };
 
+  // Component ตารางการแข่งขัน
+  const RenderMatchTable = ({ isModal = false }: { isModal?: boolean }) => (
+    <div className={`bg-white rounded-xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col ${isModal ? 'h-full' : 'h-full'}`}>
+      <div className="bg-purple-900 text-white px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-purple-950 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🏆</span>
+          <div>
+            <h3 className="font-bold text-sm sm:text-base md:text-lg leading-tight">โปรแกรมการแข่งขัน</h3>
+            <p className="text-[11px] text-purple-200 font-medium">({currentMatchTab.tabName})</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 bg-purple-950/60 p-1 rounded-lg border border-purple-700/50">
+          <button
+            onClick={() => handleMatchTabChange(currentMatchTabIdx - 1)}
+            disabled={currentMatchTabIdx === 0}
+            className="bg-white hover:bg-purple-100 disabled:opacity-40 text-purple-900 font-bold text-xs px-2 py-1 rounded transition shadow-sm"
+          >
+            ◀ <span className="hidden sm:inline">ก่อนหน้า</span>
+          </button>
+
+          <select
+            value={currentMatchTabIdx}
+            onChange={(e) => handleMatchTabChange(Number(e.target.value))}
+            className="bg-white text-purple-900 font-bold text-xs px-2 py-1 rounded border border-purple-300 cursor-pointer focus:outline-none"
+          >
+            {matchScheduleTabs.map((t, idx) => (
+              <option key={idx} value={idx}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => handleMatchTabChange(currentMatchTabIdx + 1)}
+            disabled={currentMatchTabIdx === matchScheduleTabs.length - 1}
+            className="bg-white hover:bg-purple-100 disabled:opacity-40 text-purple-900 font-bold text-xs px-2 py-1 rounded transition shadow-sm"
+          >
+            <span className="hidden sm:inline">ถัดไป</span> ▶
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fetchMatchData(currentMatchTab.tabName)}
+            className="bg-white/20 hover:bg-white/30 text-white text-xs px-2.5 py-1.5 rounded-lg border border-purple-400/50 font-semibold flex items-center gap-1 transition shadow-sm"
+            title="รีเฟรชข้อมูลการแข่งขัน"
+          >
+            <span>🔄</span>
+            <span className="hidden sm:inline">{isLoadingMatches ? 'โหลด...' : 'รีเฟรช'}</span>
+          </button>
+
+          <button 
+            onClick={() => setIsFullscreenMatch(!isModal)}
+            className="bg-amber-400 hover:bg-amber-500 text-purple-950 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition shadow"
+          >
+            {isModal ? (
+              <><span>✕</span><span>ย่อขนาด</span></>
+            ) : (
+              <><span>⛶</span><span>ขยายเต็มจอ</span></>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className={`overflow-auto flex-1 bg-slate-50 ${isModal ? 'max-h-[80vh]' : 'max-h-[260px]'}`}>
+        {isLoadingMatches ? (
+          <div className="p-10 text-center text-purple-900 font-bold text-xs md:text-sm">
+            ⏳ กำลังดึงตารางการแข่งขัน ({currentMatchTab.tabName})...
+          </div>
+        ) : parsedMatches.length === 0 ? (
+          <div className="p-10 text-center text-slate-500 font-semibold text-xs md:text-sm">
+            ⚠️ ไม่พบข้อมูลโปรแกรมการแข่งขัน {currentMatchTab.tabName}
+          </div>
+        ) : (
+          <table className="w-full text-left text-xs border-collapse min-w-[700px]">
+            <thead className="bg-purple-100 text-purple-950 sticky top-0 z-10 font-bold border-b border-purple-200">
+              <tr>
+                <th className="p-2.5 w-20 text-center">เวลา</th>
+                <th className="p-2.5 w-28">กีฬา</th>
+                <th className="p-2.5 w-24">รุ่น</th>
+                <th className="p-2.5 w-20">รอบ</th>
+                <th className="p-2.5 text-center">แมตช์การแข่งขัน</th>
+                <th className="p-2.5 w-24 text-center">ผล</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {parsedMatches.map((m, idx) => (
+                <tr key={idx} className="hover:bg-purple-50/50 transition">
+                  <td className="p-2.5 font-bold text-purple-900 text-center whitespace-nowrap bg-purple-50/30">
+                    {m.time}
+                  </td>
+                  <td className="p-2.5 font-bold text-slate-800">{m.sport}</td>
+                  <td className="p-2.5 text-slate-600">{m.category}</td>
+                  <td className="p-2.5 text-slate-600">{m.round}</td>
+                  <td className="p-2.5 text-center font-medium">
+                    <span className="text-slate-800 font-semibold">{m.team1}</span>
+                    <span className="mx-2 text-rose-600 font-bold text-[11px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">vs</span>
+                    <span className="text-slate-800 font-semibold">{m.team2}</span>
+                  </td>
+                  <td className="p-2.5 text-center font-bold text-emerald-700 bg-emerald-50/40">
+                    {m.result}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+
+  // Component ตารางใช้รถ
   const RenderVehicleTable = ({ isModal = false }: { isModal?: boolean }) => (
     <div className={`bg-white rounded-xl shadow-md border-2 border-slate-300 overflow-hidden ${isModal ? 'h-full flex flex-col' : 'h-full flex flex-col justify-between'}`}>
       <div className="bg-amber-300 text-slate-900 px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-amber-400 shrink-0">
@@ -272,7 +386,7 @@ export default function Home() {
           </button>
 
           <button 
-            onClick={() => setIsFullscreen(!isModal)}
+            onClick={() => setIsFullscreenVehicle(!isModal)}
             className="bg-purple-900 hover:bg-purple-950 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition shadow"
           >
             {isModal ? (
@@ -402,7 +516,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-4 order-1 space-y-3">
             
-            {/* บล็อก DAY เพิ่ม Animation เรืองแสง (Glowing) */}
+            {/* บล็อก DAY Card */}
             <div className="bg-gradient-to-b from-white to-amber-50/50 border-2 rounded-xl p-5 text-center shadow-md glowing-day-card transition">
               <span className="inline-block bg-amber-400 text-purple-950 font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1 shadow-sm">
                 MATCHDAY TODAY
@@ -442,100 +556,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="md:col-span-8 order-2 bg-white border-2 border-slate-300 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[280px]">
-            <div className="bg-purple-900 text-white px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-purple-950">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🏆</span>
-                <h3 className="font-bold text-sm sm:text-base md:text-lg">โปรแกรมการแข่งขัน ({currentMatchTab.tabName})</h3>
-              </div>
-
-              {/* ปุ่มเลื่อนแท็บ + เพิ่มปุ่มรีเฟรชบนตารางการแข่งขัน */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => fetchMatchData(currentMatchTab.tabName)}
-                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2.5 py-1 rounded-lg border border-purple-400/50 font-semibold flex items-center gap-1 transition shadow-sm"
-                  title="รีเฟรชข้อมูลการแข่งขัน"
-                >
-                  <span>🔄</span>
-                  <span className="hidden sm:inline">{isLoadingMatches ? 'โหลด...' : 'รีเฟรช'}</span>
-                </button>
-
-                <div className="flex items-center gap-1.5 bg-purple-950/60 p-1 rounded-lg border border-purple-700/50">
-                  <button
-                    onClick={() => handleMatchTabChange(currentMatchTabIdx - 1)}
-                    disabled={currentMatchTabIdx === 0}
-                    className="bg-white hover:bg-purple-100 disabled:opacity-40 text-purple-900 font-bold text-xs px-2 py-1 rounded transition shadow-sm"
-                  >
-                    ◀ <span className="hidden sm:inline">ก่อนหน้า</span>
-                  </button>
-
-                  <select
-                    value={currentMatchTabIdx}
-                    onChange={(e) => handleMatchTabChange(Number(e.target.value))}
-                    className="bg-white text-purple-900 font-bold text-xs px-2 py-1 rounded border border-purple-300 cursor-pointer focus:outline-none"
-                  >
-                    {matchScheduleTabs.map((t, idx) => (
-                      <option key={idx} value={idx}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    onClick={() => handleMatchTabChange(currentMatchTabIdx + 1)}
-                    disabled={currentMatchTabIdx === matchScheduleTabs.length - 1}
-                    className="bg-white hover:bg-purple-100 disabled:opacity-40 text-purple-900 font-bold text-xs px-2 py-1 rounded transition shadow-sm"
-                  >
-                    <span className="hidden sm:inline">ถัดไป</span> ▶
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-auto flex-1 max-h-[260px] bg-slate-50">
-              {isLoadingMatches ? (
-                <div className="p-10 text-center text-purple-900 font-bold text-xs md:text-sm">
-                  ⏳ กำลังดึงตารางการแข่งขัน ({currentMatchTab.tabName})...
-                </div>
-              ) : parsedMatches.length === 0 ? (
-                <div className="p-10 text-center text-slate-500 font-semibold text-xs md:text-sm">
-                  ⚠️ ไม่พบข้อมูลโปรแกรมการแข่งขัน {currentMatchTab.tabName}
-                </div>
-              ) : (
-                <table className="w-full text-left text-xs border-collapse min-w-[700px]">
-                  <thead className="bg-purple-100 text-purple-950 sticky top-0 z-10 font-bold border-b border-purple-200">
-                    <tr>
-                      <th className="p-2.5 w-20 text-center">เวลา</th>
-                      <th className="p-2.5 w-28">กีฬา</th>
-                      <th className="p-2.5 w-24">รุ่น</th>
-                      <th className="p-2.5 w-20">รอบ</th>
-                      <th className="p-2.5 text-center">แมตช์การแข่งขัน</th>
-                      <th className="p-2.5 w-24 text-center">ผล</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
-                    {parsedMatches.map((m, idx) => (
-                      <tr key={idx} className="hover:bg-purple-50/50 transition">
-                        <td className="p-2.5 font-bold text-purple-900 text-center whitespace-nowrap bg-purple-50/30">
-                          {m.time}
-                        </td>
-                        <td className="p-2.5 font-bold text-slate-800">{m.sport}</td>
-                        <td className="p-2.5 text-slate-600">{m.category}</td>
-                        <td className="p-2.5 text-slate-600">{m.round}</td>
-                        <td className="p-2.5 text-center font-medium">
-                          <span className="text-slate-800 font-semibold">{m.team1}</span>
-                          <span className="mx-2 text-rose-600 font-bold text-[11px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">vs</span>
-                          <span className="text-slate-800 font-semibold">{m.team2}</span>
-                        </td>
-                        <td className="p-2.5 text-center font-bold text-emerald-700 bg-emerald-50/40">
-                          {m.result}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+          <div className="md:col-span-8 order-2">
+            <RenderMatchTable isModal={false} />
           </div>
 
           <div className="block md:hidden order-3 space-y-3 col-span-1">
@@ -653,8 +675,17 @@ export default function Home() {
 
       </div>
 
-      {/* Modal โหมดขยายเต็มหน้าจอ */}
-      {isFullscreen && (
+      {/* Modal โหมดขยายเต็มหน้าจอ ตารางการแข่งขัน */}
+      {isFullscreenMatch && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 p-4 md:p-8 flex items-center justify-center">
+          <div className="w-full max-w-7xl h-full max-h-[90vh]">
+            <RenderMatchTable isModal={true} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal โหมดขยายเต็มหน้าจอ ตารางใช้รถ */}
+      {isFullscreenVehicle && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 p-4 md:p-8 flex items-center justify-center">
           <div className="w-full max-w-7xl h-full max-h-[90vh]">
             <RenderVehicleTable isModal={true} />
