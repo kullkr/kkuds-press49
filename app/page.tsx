@@ -43,10 +43,10 @@ export default function Home() {
   const [isFullscreenMatch, setIsFullscreenMatch] = useState(false);
   
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
-  const [parsedVehicleRows, setParsedVehicleRows] = useState<any[]>([]);
+  const [parsedVehicleRows, setParsedVehicleRows] = useState<unknown[]>([]);
 
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
-  const [parsedMatches, setParsedMatches] = useState<any[]>([]);
+  const [parsedMatches, setParsedMatches] = useState<unknown[]>([]);
 
   const currentVehicleDay = vehicleScheduleDays[currentVehicleDayIdx];
   const currentMatchTab = matchScheduleTabs[currentMatchTabIdx];
@@ -122,7 +122,7 @@ export default function Home() {
     }
   };
 
-  const getCellValue = (cell: any) => {
+  const getCellValue = (cell: Record<string, unknown> | null | undefined) => {
     if (!cell) return '';
     if (cell.v !== null && cell.v !== undefined && String(cell.v).trim() !== '') {
       return String(cell.v).trim();
@@ -133,9 +133,9 @@ export default function Home() {
     return '';
   };
 
-  const parseExactVehicleRows = (rows: any[]) => {
+  const parseExactVehicleRows = (rows: Array<{ c?: Array<Record<string, unknown>> }>) => {
     let currentZone = '';
-    const resultRows: any[] = [];
+    const resultRows: unknown[] = [];
 
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
@@ -156,7 +156,7 @@ export default function Home() {
         rawSlots[i] = getCellValue(row.c[i + 2]);
       }
 
-      const mergedCells: any[] = [];
+      const mergedCells: Array<{ text: string; span: number }> = [];
       let i = 0;
       while (i < 25) {
         const text = rawSlots[i];
@@ -219,7 +219,7 @@ export default function Home() {
   };
 
   const RenderMatchTable = ({ isModal = false }: { isModal?: boolean }) => (
-    <div className={`bg-white rounded-xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col ${isModal ? 'h-full' : 'h-full'}`}>
+    <div className="bg-white rounded-xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col h-full">
       <div className="bg-purple-900 text-white px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-purple-950 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-xl">🏆</span>
@@ -304,24 +304,27 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
-              {parsedMatches.map((m, idx) => (
-                <tr key={idx} className="hover:bg-purple-50/50 transition">
-                  <td className="p-2.5 font-bold text-purple-900 text-center whitespace-nowrap bg-purple-50/30">
-                    {m.time}
-                  </td>
-                  <td className="p-2.5 font-bold text-slate-800">{m.sport}</td>
-                  <td className="p-2.5 text-slate-600">{m.category}</td>
-                  <td className="p-2.5 text-slate-600">{m.round}</td>
-                  <td className="p-2.5 text-center font-medium">
-                    <span className="text-slate-800 font-semibold">{m.team1}</span>
-                    <span className="mx-2 text-rose-600 font-bold text-[11px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">vs</span>
-                    <span className="text-slate-800 font-semibold">{m.team2}</span>
-                  </td>
-                  <td className="p-2.5 text-center font-bold text-emerald-700 bg-emerald-50/40">
-                    {m.result}
-                  </td>
-                </tr>
-              ))}
+              {parsedMatches.map((item, idx) => {
+                const m = item as Record<string, string>;
+                return (
+                  <tr key={idx} className="hover:bg-purple-50/50 transition">
+                    <td className="p-2.5 font-bold text-purple-900 text-center whitespace-nowrap bg-purple-50/30">
+                      {m.time}
+                    </td>
+                    <td className="p-2.5 font-bold text-slate-800">{m.sport}</td>
+                    <td className="p-2.5 text-slate-600">{m.category}</td>
+                    <td className="p-2.5 text-slate-600">{m.round}</td>
+                    <td className="p-2.5 text-center font-medium">
+                      <span className="text-slate-800 font-semibold">{m.team1}</span>
+                      <span className="mx-2 text-rose-600 font-bold text-[11px] bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">vs</span>
+                      <span className="text-slate-800 font-semibold">{m.team2}</span>
+                    </td>
+                    <td className="p-2.5 text-center font-bold text-emerald-700 bg-emerald-50/40">
+                      {m.result}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -419,39 +422,42 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 bg-white text-slate-800">
-              {parsedVehicleRows.map((v, vIdx) => (
-                <tr key={vIdx} className="hover:bg-slate-50">
-                  <td className="p-1.5 w-14 sticky left-0 z-10 bg-slate-100 border-r border-slate-300 text-center font-bold text-slate-700 shadow-sm">
-                    {v.zone ? (
-                      <span className={`px-1 py-0.5 rounded text-[9px] ${v.zone.includes('พะเยา') ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
-                        {v.zone}
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="p-2 w-36 sticky left-[56px] z-10 bg-slate-50 border-r border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px]">🚐</span>
-                      <p className="font-bold text-[11px] text-slate-900 whitespace-pre-line leading-tight">{v.name}</p>
-                    </div>
-                  </td>
-                  {(v.cells || []).map((cell: any, cIdx: number) => {
-                    if (cell && cell.text) {
+              {parsedVehicleRows.map((item, vIdx) => {
+                const v = item as { zone?: string; name?: string; cells?: Array<{ text: string; span: number }> };
+                return (
+                  <tr key={vIdx} className="hover:bg-slate-50">
+                    <td className="p-1.5 w-14 sticky left-0 z-10 bg-slate-100 border-r border-slate-300 text-center font-bold text-slate-700 shadow-sm">
+                      {v.zone ? (
+                        <span className={`px-1 py-0.5 rounded text-[9px] ${v.zone.includes('พะเยา') ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
+                          {v.zone}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="p-2 w-36 sticky left-[56px] z-10 bg-slate-50 border-r border-slate-200 shadow-sm">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px]">🚐</span>
+                        <p className="font-bold text-[11px] text-slate-900 whitespace-pre-line leading-tight">{v.name}</p>
+                      </div>
+                    </td>
+                    {(v.cells || []).map((cell, cIdx: number) => {
+                      if (cell && cell.text) {
+                        return (
+                          <td key={cIdx} colSpan={cell.span || 1} className="p-1 border-r border-slate-200 text-center align-middle">
+                            <div className={`p-1.5 rounded font-semibold text-[10px] leading-tight border shadow-sm whitespace-pre-line h-full flex items-center justify-center ${getWorkColorStyle(cell.text)}`}>
+                              {cell.text}
+                            </div>
+                          </td>
+                        );
+                      }
                       return (
-                        <td key={cIdx} colSpan={cell.span || 1} className="p-1 border-r border-slate-200 text-center align-middle">
-                          <div className={`p-1.5 rounded font-semibold text-[10px] leading-tight border shadow-sm whitespace-pre-line h-full flex items-center justify-center ${getWorkColorStyle(cell.text)}`}>
-                            {cell.text}
-                          </div>
+                        <td key={cIdx} className="p-1 border-r border-slate-100 text-center align-middle">
+                          <span className="text-slate-300">•</span>
                         </td>
                       );
-                    }
-                    return (
-                      <td key={cIdx} className="p-1 border-r border-slate-100 text-center align-middle">
-                        <span className="text-slate-300">•</span>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
