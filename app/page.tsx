@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const marqueeText = "📣 ยินดีต้อนรับสู่ศูนย์ประสานงาน Press Center KKUDS | โปรดตรวจสอบตารางการใช้ยานพาหนะและรายงานผลการแข่งขันประจำวันได้ที่นี่";
 
-  // แท็บประจำวันสำหรับตารางการใช้รถ
   const vehicleScheduleDays = [
     { day: 'DAY 0', date: '23 October 2026', vehicleTab: '23/10/2026' },
     { day: 'DAY 1', date: '24 October 2026', vehicleTab: '24/10/2026' },
@@ -16,7 +15,6 @@ export default function Home() {
     { day: 'DAY 7', date: '30 October 2026', vehicleTab: '30/10/2026' },
   ];
 
-  // รายการแท็บทั้งหมดของการแข่งขัน
   const matchScheduleTabs = [
     { label: '23 ต.ค. 69 (รวมประจำวัน)', tabName: '23 ต.ค. 69' },
     { label: '24 ต.ค. 69 (รวมประจำวัน)', tabName: '24 ต.ค. 69' },
@@ -44,11 +42,9 @@ export default function Home() {
   const [isFullscreenVehicle, setIsFullscreenVehicle] = useState(false);
   const [isFullscreenMatch, setIsFullscreenMatch] = useState(false);
   
-  // State ตารางใช้รถ
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
   const [parsedVehicleRows, setParsedVehicleRows] = useState<any[]>([]);
 
-  // State ตารางโปรแกรมการแข่งขัน
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [parsedMatches, setParsedMatches] = useState<any[]>([]);
 
@@ -103,7 +99,7 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to fetch vehicle data", err);
       setParsedVehicleRows([]);
-    } flex {
+    } finally {
       setIsLoadingVehicles(false);
     }
   };
@@ -222,7 +218,6 @@ export default function Home() {
     return colorPairs[index];
   };
 
-  // Component ตารางการแข่งขัน
   const RenderMatchTable = ({ isModal = false }: { isModal?: boolean }) => (
     <div className={`bg-white rounded-xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col ${isModal ? 'h-full' : 'h-full'}`}>
       <div className="bg-purple-900 text-white px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-purple-950 shrink-0">
@@ -334,7 +329,6 @@ export default function Home() {
     </div>
   );
 
-  // Component ตารางใช้รถ
   const RenderVehicleTable = ({ isModal = false }: { isModal?: boolean }) => (
     <div className={`bg-white rounded-xl shadow-md border-2 border-slate-300 overflow-hidden ${isModal ? 'h-full flex flex-col' : 'h-full flex flex-col justify-between'}`}>
       <div className="bg-amber-300 text-slate-900 px-3 py-2.5 sm:px-4 sm:py-3 flex flex-wrap justify-between items-center gap-2 border-b border-amber-400 shrink-0">
@@ -467,8 +461,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans">
-      
-      {/* CSS Animation สำหรับ Glowing DAY Card */}
       <style jsx global>{`
         @keyframes dayGlow {
           0%, 100% {
@@ -485,7 +477,6 @@ export default function Home() {
         }
       `}</style>
 
-      {/* 1. Header Banner */}
       <header className="w-full bg-[#42037b] shadow-md border-b-4 border-amber-400 overflow-hidden relative">
         <div className="absolute inset-y-0 right-0 w-1/2 bg-[#ffe97a] -z-0"></div>
         <div className="max-w-6xl mx-auto flex items-center justify-center relative z-10">
@@ -497,10 +488,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Container */}
       <div className="max-w-6xl mx-auto w-full p-3 md:p-5 space-y-4 flex-1">
-        
-        {/* 2. ข้อความวิ่ง ประชาสัมพันธ์ประจำวัน */}
         <section className="bg-white border-2 border-slate-300 rounded-xl p-3 shadow-sm overflow-hidden flex items-center">
           <span className="bg-purple-900 text-white text-xs font-bold px-3 py-1 rounded-md shrink-0 mr-3">
             ประกาศ
@@ -512,11 +500,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. ส่วนกลาง: DAY + โปรแกรมการแข่งขัน */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-4 order-1 space-y-3">
-            
-            {/* บล็อก DAY Card */}
             <div className="bg-gradient-to-b from-white to-amber-50/50 border-2 rounded-xl p-5 text-center shadow-md glowing-day-card transition">
               <span className="inline-block bg-amber-400 text-purple-950 font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1 shadow-sm">
                 MATCHDAY TODAY
@@ -587,7 +572,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 4. ส่วนตารางใช้รถ (ซ้าย 8 คอลัมน์) / กลุ่มปุ่มบริการ (ขวา 4 คอลัมน์) */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
           <div className="md:col-span-8 h-full">
             <RenderVehicleTable isModal={false} />
@@ -636,7 +620,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 5. ปุ่มใหญ่ด้านล่าง 3 บล็อก */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           <a 
             href="https://satitkku.vercel.app/" 
@@ -672,10 +655,8 @@ export default function Home() {
             </span>
           </a>
         </div>
-
       </div>
 
-      {/* Modal โหมดขยายเต็มหน้าจอ ตารางการแข่งขัน */}
       {isFullscreenMatch && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 p-4 md:p-8 flex items-center justify-center">
           <div className="w-full max-w-7xl h-full max-h-[90vh]">
@@ -684,7 +665,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal โหมดขยายเต็มหน้าจอ ตารางใช้รถ */}
       {isFullscreenVehicle && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 p-4 md:p-8 flex items-center justify-center">
           <div className="w-full max-w-7xl h-full max-h-[90vh]">
@@ -693,7 +673,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 6. Footer */}
       <footer className="bg-white border-t border-slate-200 mt-8 p-6 text-center text-slate-500 font-medium text-sm">
         Press Center KKUDS © 2026 Powered by Drunken Master
       </footer>
