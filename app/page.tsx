@@ -522,7 +522,7 @@ export default function Home() {
 
             <div className="hidden md:block space-y-3">
               <a 
-                href="https://docs.google.com/spreadsheets/d/17au0zI3Bk0Af56bL44y-Njp8YH4Lm77ICG-qiRSYii0/edit?gid=1480633138#gid=1480633138"
+                href="https://kku-creative.my.canva.site/kkuds"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-white hover:bg-slate-50 border-2 border-slate-300 rounded-xl p-4 text-center font-bold text-base text-slate-800 shadow-sm transition flex items-center justify-center gap-2"
@@ -553,7 +553,7 @@ export default function Home() {
 
           <div className="block md:hidden order-3 space-y-3 col-span-1">
             <a 
-              href="https://docs.google.com/spreadsheets/d/17au0zI3Bk0Af56bL44y-Njp8YH4Lm77ICG-qiRSYii0/edit?gid=1480633138#gid=1480633138"
+              href="https://kku-creative.my.canva.site/kkuds"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-white hover:bg-slate-50 border-2 border-slate-300 rounded-xl p-3.5 text-center font-bold text-base text-slate-800 shadow-sm transition flex items-center justify-center gap-2"
